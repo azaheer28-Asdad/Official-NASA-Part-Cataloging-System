@@ -11,7 +11,9 @@ import re
 
 BOX_NUMBER = 1
 
-entry = []
+
+csv_file_name = f"Box {BOX_NUMBER} Contents.csv"
+
 
 cap = cv2.VideoCapture(0)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 500)
@@ -28,6 +30,7 @@ while True:
     key = cv2.waitKey(1)
     
     if key == ord(' '):
+        entry = []
         cv2.imwrite("label.jpg", frame)
         cv2.imshow("captured", frame)
 
@@ -155,8 +158,17 @@ while True:
 #===================================================================================================
         print(entry)
 
+        csv_file_name = f"Box {BOX_NUMBER} Contents.csv"
+        with open(csv_file_name, mode='a', newline='') as csvFile:
+            writer = csv.writer(csvFile)
+            writer.writerow(entry)
+
 
 
 
     if key == ord('q'):
+        header_list = ['Part Number', 'Description', 'Size', 'Date Code', 'Lot Code', 'Quantity', 'Box Number']
+        if csv_file_name and os.path.exists(csv_file_name):
+            df = pd.read_csv(csv_file_name, header=None)
+            df.to_csv(csv_file_name, header=header_list, index=False)
         break
