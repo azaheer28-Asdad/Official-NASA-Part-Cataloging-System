@@ -22,12 +22,32 @@ import sys
 
 BOX_NUMBER = 0
 
+pygame.init()
+pygame.mixer.init()
+def good():
+    good_sfx = pygame.mixer.Sound("good.mp3")
+    good_sfx.set_volume(0.3)
+    good_sfx.play()
+    time.sleep(1)
+
+def bad():
+    bad_sfx = pygame.mixer.Sound("bad.mp3")
+    bad_sfx.set_volume(1)
+    print("ERROR!!!!!")
+    bad_sfx.play()
+    time.sleep(0.4)
+    bad_sfx.play()
+    time.sleep(0.4)
+    bad_sfx.play()
+    time.sleep(1)
+
+
 def quit_it():
-    header_list = ['Part Number', 'Description', 'Size', 'Date Code', 'Lot Code', 'Quantity', 'Box Number']
+    header_list = ['Part Number', 'Description', 'Size', 'Date Code', 'Quantity', 'Box Number']
     if csv_file_name and os.path.exists(csv_file_name) and os.path.getsize(csv_file_name) > 0:
         try:
             df = pd.read_csv(csv_file_name, header=None)
-            df = df.reindex(columns=range(7))
+            df = df.reindex(columns=range(6))
             df.columns = header_list
             df.to_csv(csv_file_name, index=False)
         except pd.errors.EmptyDataError:
@@ -48,52 +68,52 @@ def save_and_quit(current_entry):
     with open(csv_file_name, mode='a', newline='') as csvFile:
         writer = csv.writer(csvFile)
         writer.writerow(current_entry)
+        good()
 
     # 2. Run your normal quit function to format headers and close!
     quit_it()
 
+
 def buttons(possible_parts, title, button_thick, next_label_length, loc):
     tk.Label(root, text=title).place(relx=0, rely=0 + next_label_length, relheight=button_thick / 2)
-    tk.Button(root, text="None", command=lambda: update_entry(loc, "None")).place(relx=0.17, rely=0 + next_label_length,
-                                                                                  relwidth=0.15,
-                                                                                  relheight=button_thick / 2)
+
+    # "None" Button Layout - Streamlined!
+    btn_none = tk.Button(root, text="None", bg="white",
+                         command=lambda: [update_entry(loc, "None"), btn_none.config(bg="lightblue")])
+    btn_none.place(relx=0.17, rely=0 + next_label_length, relwidth=0.15, relheight=button_thick / 2)
 
     tk.Label(root, text="Edit:").place(relx=0.30, rely=0 + next_label_length, relheight=button_thick / 2)
 
-    # Text box fixed!
+    # Text box (Stays normal since it uses Return key binding)
     edite = tk.Entry(root, width=50)
     edite.place(relx=0.35, rely=0 + next_label_length, relheight=button_thick / 2)
     edite.bind('<Return>', lambda event, e=edite, l=loc: update_entry(l, e.get()))
 
     if len(possible_parts) == 1:
         tk.Label(root, text=f"Found: {possible_parts[0]}").place(relx=0.10, rely=0.04 + next_label_length)
-        # Auto-save it immediately!
         update_entry(loc, possible_parts[0])
 
     elif len(possible_parts) == 2:
-        tk.Button(root, text=possible_parts[0], command=lambda: update_entry(loc, possible_parts[0])).place(relx=0,
-                                                                                                            rely=0.04 + next_label_length,
-                                                                                                            relwidth=0.5,
-                                                                                                            relheight=button_thick)
-        tk.Button(root, text=possible_parts[1], command=lambda: update_entry(loc, possible_parts[1])).place(relx=0.5,
-                                                                                                            rely=0.04 + next_label_length,
-                                                                                                            relwidth=0.5,
-                                                                                                            relheight=button_thick)
+        btn1 = tk.Button(root, text=possible_parts[0], bg="white",
+                         command=lambda: [update_entry(loc, possible_parts[0]), btn1.config(bg="lightblue")])
+        btn1.place(relx=0, rely=0.04 + next_label_length, relwidth=0.5, relheight=button_thick)
+
+        btn2 = tk.Button(root, text=possible_parts[1], bg="white",
+                         command=lambda: [update_entry(loc, possible_parts[1]), btn2.config(bg="lightblue")])
+        btn2.place(relx=0.5, rely=0.04 + next_label_length, relwidth=0.5, relheight=button_thick)
 
     elif len(possible_parts) == 3:
-        tk.Button(root, text=possible_parts[0], command=lambda: update_entry(loc, possible_parts[0])).place(relx=0,
-                                                                                                            rely=0.04 + next_label_length,
-                                                                                                            relwidth=0.333,
-                                                                                                            relheight=button_thick)
-        tk.Button(root, text=possible_parts[1], command=lambda: update_entry(loc, possible_parts[1])).place(relx=0.333,
-                                                                                                            rely=0.04 + next_label_length,
-                                                                                                            relwidth=0.333,
-                                                                                                            relheight=button_thick)
-        tk.Button(root, text=possible_parts[2], command=lambda: update_entry(loc, possible_parts[2])).place(relx=0.666,
-                                                                                                            rely=0.04 + next_label_length,
-                                                                                                            relwidth=0.333,
-                                                                                                            relheight=button_thick)
+        btn1 = tk.Button(root, text=possible_parts[0], bg="white",
+                         command=lambda: [update_entry(loc, possible_parts[0]), btn1.config(bg="lightblue")])
+        btn1.place(relx=0, rely=0.04 + next_label_length, relwidth=0.333, relheight=button_thick)
 
+        btn2 = tk.Button(root, text=possible_parts[1], bg="white",
+                         command=lambda: [update_entry(loc, possible_parts[1]), btn2.config(bg="lightblue")])
+        btn2.place(relx=0.333, rely=0.04 + next_label_length, relwidth=0.333, relheight=button_thick)
+
+        btn3 = tk.Button(root, text=possible_parts[2], bg="white",
+                         command=lambda: [update_entry(loc, possible_parts[2]), btn3.config(bg="lightblue")])
+        btn3.place(relx=0.666, rely=0.04 + next_label_length, relwidth=0.333, relheight=button_thick)
 
 csv_file_name = f"Box {BOX_NUMBER} Contents.csv"
 
@@ -116,7 +136,7 @@ while True:
         root.title('NPCS')
         root.geometry("800x600")
 
-        entry = ["", "", "", "", "", "", ""]
+        entry = ["", "", "", "", "", ""]
         cv2.imwrite("label.jpg", frame)
 
         result = ocr.predict("label.jpg")
@@ -194,25 +214,41 @@ while True:
         title = "Possible Date Codes"
         button_thick = 0.075
         next_label_length = 0.4
-        loc = 4
+        loc = 3
         buttons(possible_date_codes, title, button_thick, next_label_length, loc)   
         
         
 #===================================================================================================quantity
+        #===================================================================================================QUANTITY
+        possible_quantities = []
+        for text in result:
+            # 1. Look for prefixes like QTY, QTY:, Quantity, etc.
+            prefix_pattern = re.compile(r"(?i)(?:qty|quantity|q)\s*[-:]?\s*")
+
+            if prefix_pattern.search(text):
+                # Wipe the prefix out
+                clean_text = prefix_pattern.sub("", text)
+                # Find exactly 1 to 5 digits with word boundaries
+                match = re.search(r"\b\d{1,5}\b", clean_text)
+                if match:
+                    possible_quantities.append(match.group())
+            else:
+                # 2. No prefix? Accept the line if it is ONLY a 1 to 5 digit number
+                standalone_match = re.match(r"^\s*(\d{1,5})\s*$", text)
+                if standalone_match:
+                    possible_quantities.append(standalone_match.group(1))
+
+        title = "Possible Quantities"
+        button_thick = 0.075
         next_label_length = 0.6
-
-        tk.Label(root, text="Quantity:").place(relx=0.30, rely=0 + next_label_length, relheight=button_thick / 2)
-
-        edited_qty = tk.Entry(root, width=50)
-        edited_qty.place(relx=0.35, rely=0 + next_label_length, relheight=button_thick / 2)
-        edited_qty.bind('<Return>', lambda event: update_entry(4, edited_qty.get()))
-
-#===================================================================================================
+        loc = 4
+        # Pass in possible_quantities!
+        buttons(possible_quantities, title, button_thick, next_label_length, loc)
+    #===================================================================================================
         print(entry)
 
-        tk.Button(root, text="Etch into Sheet", command=lambda: root.destroy()).place(relx=0.65, rely=0.88,
-                                                                                      relwidth=0.333,
-                                                                                      relheight=button_thick * 1.3)
+        Etch = tk.Button(root, text="Etch into Sheet", command=lambda: (root.destroy(), good()))
+        Etch.place(relx=0.65, rely=0.88, relwidth=0.333, relheight=button_thick * 1.3)
         tk.Button(root, text="Save and Quit", command=lambda: save_and_quit(entry)).place(relx=0.02, rely=0.88, relwidth=0.333, relheight=button_thick * 1.3)
 
 #-----------------------------------------------------main loop end                                                            relheight=button_thick * 1.3)
