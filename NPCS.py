@@ -1,4 +1,5 @@
 import os
+from tkinter import font
 
 from setuptools._distutils import command
 
@@ -75,45 +76,51 @@ def save_and_quit(current_entry):
 
 
 def buttons(possible_parts, title, button_thick, next_label_length, loc):
-    tk.Label(root, text=title).place(relx=0, rely=0 + next_label_length, relheight=button_thick / 2)
+    tk.Label(root, text=title, font=word_font).place(relx=0, rely=0 + next_label_length, relheight=button_thick / 2)
 
     # "None" Button Layout - Streamlined!
-    btn_none = tk.Button(root, text="None", bg="white",
+    btn_none = tk.Button(root, text="None", bg="white", font=word_font,
                          command=lambda: [update_entry(loc, "None"), btn_none.config(bg="lightblue")])
     btn_none.place(relx=0.17, rely=0 + next_label_length, relwidth=0.15, relheight=button_thick / 2)
 
-    tk.Label(root, text="Edit:").place(relx=0.30, rely=0 + next_label_length, relheight=button_thick / 2)
+    tk.Label(root, text="Edit:", font=word_font).place(relx=0.30, rely=0 + next_label_length, relheight=button_thick / 2)
 
     # Text box (Stays normal since it uses Return key binding)
     edite = tk.Entry(root, width=50)
+    text_boxes.append((edite, loc))
     edite.place(relx=0.35, rely=0 + next_label_length, relheight=button_thick / 2)
     edite.bind('<Return>', lambda event, e=edite, l=loc: update_entry(l, e.get()))
+    #autopopulate the text box prepare for an edit
+    edite.bind('<Button-1>',
+               lambda event, e=edite, p=possible_parts: e.insert(0, p[0]) if len(p) == 1 and e.get() == "" else None)
+    edite.bind('<Return>', lambda event, e=edite, l=loc: [update_entry(l, e.get()), e.config(bg="#D4EDDA")])
 
     if len(possible_parts) == 1:
-        tk.Label(root, text=f"Found: {possible_parts[0]}").place(relx=0.10, rely=0.04 + next_label_length)
+        tk.Label(root, text=f"Found: {possible_parts[0]}", font=found_font).place(relx=0.10, rely=0.04 + next_label_length)
         update_entry(loc, possible_parts[0])
 
     elif len(possible_parts) == 2:
-        btn1 = tk.Button(root, text=possible_parts[0], bg="white",
+        btn1 = tk.Button(root, text=possible_parts[0], bg="white", font=word_font,
                          command=lambda: [update_entry(loc, possible_parts[0]), btn1.config(bg="lightblue")])
         btn1.place(relx=0, rely=0.04 + next_label_length, relwidth=0.5, relheight=button_thick)
 
-        btn2 = tk.Button(root, text=possible_parts[1], bg="white",
+        btn2 = tk.Button(root, text=possible_parts[1], bg="white", font=word_font,
                          command=lambda: [update_entry(loc, possible_parts[1]), btn2.config(bg="lightblue")])
         btn2.place(relx=0.5, rely=0.04 + next_label_length, relwidth=0.5, relheight=button_thick)
 
     elif len(possible_parts) == 3:
-        btn1 = tk.Button(root, text=possible_parts[0], bg="white",
+        btn1 = tk.Button(root, text=possible_parts[0], bg="white", font=word_font,
                          command=lambda: [update_entry(loc, possible_parts[0]), btn1.config(bg="lightblue")])
         btn1.place(relx=0, rely=0.04 + next_label_length, relwidth=0.333, relheight=button_thick)
 
-        btn2 = tk.Button(root, text=possible_parts[1], bg="white",
+        btn2 = tk.Button(root, text=possible_parts[1], bg="white", font=word_font,
                          command=lambda: [update_entry(loc, possible_parts[1]), btn2.config(bg="lightblue")])
         btn2.place(relx=0.333, rely=0.04 + next_label_length, relwidth=0.333, relheight=button_thick)
 
-        btn3 = tk.Button(root, text=possible_parts[2], bg="white",
+        btn3 = tk.Button(root, text=possible_parts[2], bg="white", font=word_font,
                          command=lambda: [update_entry(loc, possible_parts[2]), btn3.config(bg="lightblue")])
         btn3.place(relx=0.666, rely=0.04 + next_label_length, relwidth=0.333, relheight=button_thick)
+
 
 csv_file_name = f"Box {BOX_NUMBER} Contents.csv"
 
@@ -130,13 +137,27 @@ while True:
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     key = cv2.waitKey(1)
+
+    if cv2.getWindowProperty("frame", cv2.WND_PROP_VISIBLE) <1:
+        quit_it()
     
     if key == ord(' '):
         root = tk.Tk()
         root.title('NPCS')
         root.geometry("800x600")
-
+        ########################################################################################################################styling
+        #bg color:
+        bg_color = "lightgray"
+        root.configure(bg=bg_color)
+        # found this part number:
+        found_font = font.Font(family="Helvetica", size=11, weight="bold")
+        # font for big labels such as save and quite and etch
+        meta_font = font.Font(family="Helvetica", size=17, weight="bold")
+        #font for each word (rel small)
+        word_font = font.Font(family="Helvetica", size=10, weight="bold")
+        ########################################################################################################################styling
         entry = ["", "", "", "", "", ""]
+        text_boxes = []
         cv2.imwrite("label.jpg", frame)
 
         result = ocr.predict("label.jpg")
@@ -247,10 +268,14 @@ while True:
     #===================================================================================================
         print(entry)
 
-        Etch = tk.Button(root, text="Etch into Sheet", command=lambda: (root.destroy(), good()))
+        Etch = tk.Button(root, text="Etch into Sheet", command=lambda: ([update_entry(loc, box.get()) for box, loc in text_boxes if box.get() != ""], root.destroy(), good()), font=meta_font)
         Etch.place(relx=0.65, rely=0.88, relwidth=0.333, relheight=button_thick * 1.3)
-        tk.Button(root, text="Save and Quit", command=lambda: save_and_quit(entry)).place(relx=0.02, rely=0.88, relwidth=0.333, relheight=button_thick * 1.3)
-
+        tk.Button(root, text="Save and Quit",
+                  command=lambda: ([update_entry(loc, box.get()) for box, loc in text_boxes if box.get() != ""],
+                                   save_and_quit(entry)), font=meta_font).place(relx=0.02, rely=0.88, relwidth=0.333,
+                                                                                relheight=button_thick * 1.3)
+        for widget in root.winfo_children():
+            widget.configure(bg=bg_color)
 #-----------------------------------------------------main loop end                                                            relheight=button_thick * 1.3)
         root.mainloop()
 
@@ -259,9 +284,3 @@ while True:
         with open(csv_file_name, mode='a', newline='') as csvFile:
             writer = csv.writer(csvFile)
             writer.writerow(entry)
-
-
-
-
-    if key == ord('q'):
-        quit_it()
