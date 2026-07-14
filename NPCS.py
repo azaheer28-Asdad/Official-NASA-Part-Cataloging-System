@@ -1,5 +1,5 @@
 import os
-from tkinter import font
+from tkinter import font, messagebox
 from setuptools._distutils import command
 
 # Force disable the conflicting PIR engine elements and optimization libraries
@@ -19,9 +19,7 @@ import tkinter as tk
 import requests
 import sys
 
-
 MOUSER_API_KEY = os.getenv("MOUSER_API_KEY")
-
 
 BOX_NUMBER = 0
 # Make sure to define your MOUSER_API_KEY here!
@@ -53,12 +51,15 @@ def quit_it():
     header_list = ['Box ID', 'Part', 'Alt Part Number', 'Type', 'Desc', 'Package', 'Date', 'Quantity']
     if csv_file_name and os.path.exists(csv_file_name) and os.path.getsize(csv_file_name) > 0:
         try:
-            df = pd.read_csv(csv_file_name, header=None, dtype=str)
+            # Fixed: Added encoding='utf-8' to pandas reader and writer
+            df = pd.read_csv(csv_file_name, header=None, dtype=str, encoding='utf-8')
             df = df.reindex(columns=range(8))
             df.columns = header_list
-            df.to_csv(csv_file_name, index=False)
+            df.to_csv(csv_file_name, index=False, encoding='utf-8')
         except pd.errors.EmptyDataError:
             pass  # Failsafe just in case
+        except PermissionError:
+            print("WARNING: Could not apply headers because the file is open in Excel.")
 
     cap.release()
     cv2.destroyAllWindows()
@@ -72,7 +73,6 @@ def update_entry(index, text):
 
 
 ############################################################################################################################## MIL-SPEC DECODER
-############################################################################################################################## MIL-SPEC DECODER
 def decode_milspec_expanded(part_number):
     """
     Filters and decodes government/military part numbers to extract
@@ -85,12 +85,52 @@ def decode_milspec_expanded(part_number):
     # 1. RESISTORS (MIL-PRF-55342)
     if pn.startswith("M55342") or pn.startswith("D55342"):
         res_sizes = {
-            '11': '0402', '12': '0603', '06': '0805', '07': '1206',
-            '08': '2010', '09': '2512', '10': '1010', '01': '0502'
+            '11': '0402',
+            '12': '0603',
+            '06': '0805',
+            '05': '0805',  # Both 05 and 06 now correctly map to 0805
+            '07': '1206',
+            '08': '2010',
+            '09': '2512',
+            '10': '1010',
+            '01': '0502'
         }
         size_code = pn[7:9] if len(pn) >= 9 else "Unknown"
         package_size = res_sizes.get(size_code, f"Code {size_code}")
-        value_code = pn[10:14] if len(pn) >= 14 else "Unknown"
+        value_code = pn[10:14] if len(pn) >= 14 else ""
+
+        # Decode the military alphanumeric resistance code system
+        res_str = value_code
+        mil_res_letters = {
+            'A': (1, "0.1%"), 'B': (1000, "0.1%"), 'C': (1000000, "0.1%"),
+            'D': (1, "1.0%"), 'E': (1000, "1.0%"), 'F': (1000000, "1.0%"),
+            'G': (1, "2.0%"), 'H': (1000, "2.0%"), 'T': (1000000, "2.0%"),
+            'J': (1, "5.0%"), 'K': (1000, "5.0%"), 'L': (1000000, "5.0%"),
+            'M': (1, "10.0%"), 'N': (1000, "10.0%"), 'P': (1000000, "10.0%")
+        }
+
+        found_letter = None
+        for char in value_code:
+            if char.isalpha():
+                found_letter = char
+                break
+
+        if found_letter in mil_res_letters:
+            mult, tol = mil_res_letters[found_letter]
+            idx = value_code.find(found_letter)
+            before = value_code[:idx]
+            after = value_code[idx + 1:]
+            try:
+                sig_str = before + "." + (after if after else "0")
+                val = float(sig_str) * mult
+                if val >= 1000000:
+                    res_str = f"{val / 1000000:g} MOhms ({tol})"
+                elif val >= 1000:
+                    res_str = f"{val / 1000:g} kOhms ({tol})"
+                else:
+                    res_str = f"{val:g} Ohms ({tol})"
+            except ValueError:
+                pass
 
         packaging = "Bulk / Bag"
         if pn.endswith("TR") or "T/R" in pn:
@@ -102,7 +142,8 @@ def decode_milspec_expanded(part_number):
 
         return {
             "Category": "resistor",
-            "Description": f"MIL-SPEC SMD Film Resistor (Value: {value_code})",
+            "Description": "MIL-SPEC SMD Film Resistor",
+            "Value": res_str,
             "Package Size": package_size,
             "Packaging": packaging
         }
@@ -260,7 +301,7 @@ def populate_mouser_data(current_entry):
             return [
                 f"{mil_data['Description']} ({mil_data['Packaging']})",
                 mil_data["Package Size"],
-                "N/A",
+                mil_data.get("Value", "N/A"),  # Dynamically fetch decoded electrical values
                 mil_data["Category"]
             ]
 
@@ -286,7 +327,13 @@ def populate_mouser_data(current_entry):
     # Apply the results to the spreadsheet entry
     if final_data:
         current_entry[3] = final_data[3]  # Type
-        current_entry[4] = final_data[0]  # Description
+
+        # If an electrical value (Resistance, Capacitance, etc.) was found, append it to the description
+        if final_data[2] != "N/A":
+            current_entry[4] = f"{final_data[0]} (Value: {final_data[2]})"
+        else:
+            current_entry[4] = final_data[0]  # Standard Description
+
         current_entry[5] = final_data[1]  # Package Size
         print("DEBUG: Successfully mapped data to sheet row!")
     else:
@@ -295,13 +342,22 @@ def populate_mouser_data(current_entry):
         current_entry[5] = "N/A"
         print("DEBUG: Both primary and alternate part lookups failed.")
 
+
 def save_and_quit(current_entry):
     populate_mouser_data(current_entry)
-    with open(csv_file_name, mode='a', newline='') as csvFile:
-        writer = csv.writer(csvFile)
-        writer.writerow(current_entry)
-        good()
-    quit_it()
+    current_entry[0] = f"{current_entry[3].upper()}, {current_entry[5]}"
+    try:
+        # Fixed: Added encoding='utf-8' here
+        with open(csv_file_name, mode='a', newline='', encoding='utf-8') as csvFile:
+            writer = csv.writer(csvFile)
+            writer.writerow(current_entry)
+            good()
+        quit_it()
+    except PermissionError:
+        print(f"ERROR: Cannot save. Please close {csv_file_name} in Excel!")
+        bad()
+        messagebox.showerror("Save Error",
+                             f"Permission Denied!\n\nPlease close '{csv_file_name}' in Excel and try again.")
 
 
 ##############################################################################################################################API Call def func
@@ -319,7 +375,10 @@ def search_mouser(part_number):
         }
     }
 
-    response = requests.post(url, json=payload, headers=headers)
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+    except Exception as e:
+        return [f"API Error: connection failed", "N/A", "N/A", "other"]
 
     description = "N/A"
     package_size = "N/A"
@@ -547,7 +606,18 @@ while True:
 
         populate_mouser_data(entry)
 
-        csv_file_name = f"Box {BOX_NUMBER} Contents.csv"
-        with open(csv_file_name, mode='a', newline='') as csvFile:
-            writer = csv.writer(csvFile)
-            writer.writerow(entry)
+        entry[0] = f"{entry[3].upper()}, {entry[5]}"
+
+        # BRING UP THE POPUP WITH THE POPULATED DATA RIGHT HERE
+        messagebox.showinfo("Sorting Instructions", f"Place in:\nType: {entry[3].upper()}\nPackage: {entry[5]}")
+
+        try:
+            # Fixed: Added encoding='utf-8' here (This is exactly where the crash happened!)
+            with open(csv_file_name, mode='a', newline='', encoding='utf-8') as csvFile:
+                writer = csv.writer(csvFile)
+                writer.writerow(entry)
+        except PermissionError:
+            print(f"ERROR: File lock encountered. Could not auto-save row to {csv_file_name}.")
+            bad()
+            messagebox.showerror("Save Error",
+                                 f"Could not auto-save row!\nPlease close '{csv_file_name}' in Excel before parsing the next item.")
