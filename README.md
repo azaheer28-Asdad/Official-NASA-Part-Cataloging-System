@@ -27,7 +27,7 @@ Here is another example using a fake made-up API key (make sure you include the 
 setx MOUSER_API_KEY "ogaeoruegpoiuhp845hpgq9peiurbggfdfak"
 ```
 * Close the terminal, and create a new folder under documents and you could call it NPCS Application
-* Go back to GitHub, and download the NPCS.zip file.
+* Go back to GitHub, and download the NPCS.zip file from the releases tab on the right side.
 * Extract it in the folder of your choosing, and then find the .exe file and double click that, as mentioned do not move the .exe file from that folder.
 
 ## How to Use the Software:
