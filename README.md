@@ -3,16 +3,17 @@ This is an open-source application created by a high school NASA intern, used to
 The program uses OpenCV to scan and process the part label, PaddleOCR to extract the text, some built-in logic plus Mouser's free API to extract information from the part number, and Tkinter to display everything. 
 The program was intendid to be used as fast as possible and to put the user ease of use first. 
 Please don't mind the outdated GUI --my bad. 
-This is supposed to be a Windows only application, but if needed on Linux, you must convert the batch file or run from IDE. If needed on a Mac, the graphics may not work, but can probably be run from IDE (using the NPCS.py file instead). 
+This is supposed to be a Windows only application, but if needed on Linux, you must run from the terminal. If needed on a Mac, the graphics may not work, but can probably be run from an IDE / terminal (using the NPCS.py file instead). 
 
 ## How to Install
 ### The General Gist:
-**NO LIBRARIES NEED TO BE INSTALLED** -- Just use the windows batch file. Easy!
+**NO LIBRARIES NEED TO BE INSTALLED** -- Just use the windows .EXE file. Easy!
 * Get a free API key from Mouser Electronics. (Has a limit of 1000 scans per day)
 * Save that key and title it exactly "MOUSER_API_KEY" (no quotes) as an env variable through the terminal
 * Create a new folder in whatever the file manager thing is called, preferably under the "Documents" tab
-* In that folder download the following: good.mp3, bad.mp3, and the Run_NPCS.bat file. The spreadsheet will also be saved here (the program generates one).
-* Finally, run the file by double clicking the .bat file. Sorry the .exe converters I was using gave me a couple of headaches and mild brain damage.
+* In that folder download the NPCS.zip file. The spreadsheet will also be saved here (the program generates one).
+* Finally, right-click the file and select "extract all", and inside one of the folders you will see an .EXE file, doudble click to run.
+* WARNING: You cannot move that .EXE file because it won't run without the other folders. 
 
 ## How to Install, Specifics:
 * [Click on this link](https://www.mouser.com/en/api-search/) and follow the instructions there and copy your API key.
@@ -26,8 +27,8 @@ Here is another example using a fake made-up API key (make sure you include the 
 setx MOUSER_API_KEY "ogaeoruegpoiuhp845hpgq9peiurbggfdfak"
 ```
 * Close the terminal, and create a new folder under documents and you could call it NPCS Application
-* Go back to GitHub, and download just the good.mp3, bad.mp3, and the Run_NPCS.bat file.
-* Now double click the .bat file and give it a second to start up, you may see the terminal come up for a fraciton of a second and that's okay.
+* Go back to GitHub, and download the NPCS.zip file.
+* Extract it in the folder of your choosing, and then find the .exe file and double click that, as mentioned do not move the .exe file from that folder.
 
 ## How to Use the Software:
 * This is the fun part.
