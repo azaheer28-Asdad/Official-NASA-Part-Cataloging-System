@@ -48,6 +48,11 @@ os.environ["FLAGS_use_mkldnn"] = "0"
 os.environ["FLAGS_enable_pir_in_executor"] = "0"
 os.environ["PADDLE_PDX_ENABLE_MKLDNN_BYDEFAULT"] = "0"
 
+# --- OPENMP DEADLOCK FIX (ADD THESE TWO LINES) ---
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["OMP_NUM_THREADS"] = "1"
+# -------------------------------------------------
+
 import numpy as np
 import cv2
 import pandas as pd
@@ -487,7 +492,8 @@ if __name__ == "__main__":
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 500)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 500)
 
-    ocr = PaddleOCR(use_textline_orientation=False, lang='en', device="cpu", enable_mkldnn=False)
+    # Force use_angle_cls instead of textline orientation to bypass PP-LCNet
+    ocr = PaddleOCR(use_angle_cls=True, lang='en', device="cpu", enable_mkldnn=False)
 
     while True:
         ret, frame = cap.read()
