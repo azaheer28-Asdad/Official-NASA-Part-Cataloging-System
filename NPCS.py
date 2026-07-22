@@ -6,6 +6,16 @@ import re
 import tkinter as tk
 from tkinter import font, messagebox
 
+################################################################################to bundle in the sounds in the .exe
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller --onefile """
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+################################################################################to bundle in the sounds in the .exe
+
+
+
 # Force disable the conflicting PIR engine elements and optimization libraries
 os.environ["FLAGS_use_mkldnn"] = "0"
 os.environ["FLAGS_enable_pir_in_executor"] = "0"
@@ -30,14 +40,16 @@ pygame.mixer.init()
 # --- Helper Functions ---
 
 def good():
-    good_sfx = pygame.mixer.Sound("good.mp3")
+    # Updated path helper
+    good_sfx = pygame.mixer.Sound(resource_path("good.mp3"))
     good_sfx.set_volume(0.3)
     good_sfx.play()
     time.sleep(1)
 
 
 def bad():
-    bad_sfx = pygame.mixer.Sound("bad.mp3")
+    # Updated path helper
+    bad_sfx = pygame.mixer.Sound(resource_path("bad.mp3"))
     bad_sfx.set_volume(1)
     print("ERROR!!!!!")
     bad_sfx.play()
@@ -46,7 +58,6 @@ def bad():
     time.sleep(0.4)
     bad_sfx.play()
     time.sleep(1)
-
 
 def quit_it():
     header_list = ['Box ID', 'Part', 'Alt Part Number', 'Type', 'Desc', 'Package', 'Date', 'Quantity']
