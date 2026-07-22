@@ -8,10 +8,16 @@ from tkinter import font, messagebox
 
 ################################################################################to bundle in the sounds in the .exe
 def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and for PyInstaller --onefile """
-    if hasattr(sys, '_MEIPASS'):
+    """Get absolute path to resource, works for dev and PyInstaller --onefile"""
+    if hasattr(sys, "_MEIPASS"):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
+
+# Ensure taskbar shows the .ico file in Windows instead of default Python icon
+try:
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("npcs.inventory.app.1")
+except Exception:
+    pass
 ################################################################################to bundle in the sounds in the .exe
 
 
@@ -40,7 +46,6 @@ pygame.mixer.init()
 # --- Helper Functions ---
 
 def good():
-    # Updated path helper
     good_sfx = pygame.mixer.Sound(resource_path("good.mp3"))
     good_sfx.set_volume(0.3)
     good_sfx.play()
@@ -48,7 +53,6 @@ def good():
 
 
 def bad():
-    # Updated path helper
     bad_sfx = pygame.mixer.Sound(resource_path("bad.mp3"))
     bad_sfx.set_volume(1)
     print("ERROR!!!!!")
@@ -59,6 +63,8 @@ def bad():
     bad_sfx.play()
     time.sleep(1)
 
+
+    
 def quit_it():
     header_list = ['Box ID', 'Part', 'Alt Part Number', 'Type', 'Desc', 'Package', 'Date', 'Quantity']
     if csv_file_name and os.path.exists(csv_file_name) and os.path.getsize(csv_file_name) > 0:
