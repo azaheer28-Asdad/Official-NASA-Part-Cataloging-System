@@ -487,7 +487,7 @@ if __name__ == "__main__":
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 500)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 500)
 
-    ocr = PaddleOCR(use_textline_orientation=True, lang='en', device="cpu", enable_mkldnn=False)
+    ocr = PaddleOCR(use_textline_orientation=False, lang='en', device="cpu", enable_mkldnn=False)
 
     while True:
         ret, frame = cap.read()
