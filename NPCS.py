@@ -1,8 +1,10 @@
 # --- PADDLEX PYINSTALLER FIX ---
 try:
     import paddlex.utils.deps
-    # Gag the dependency checker so it doesn't crash inside the .exe
+    # Gag ALL dependency checkers so they return silently inside the .exe
     paddlex.utils.deps.require_extra = lambda *args, **kwargs: None
+    paddlex.utils.deps.require_deps = lambda *args, **kwargs: None
+    paddlex.utils.deps.require_packages = lambda *args, **kwargs: None
 except ImportError:
     pass
 # -------------------------------
