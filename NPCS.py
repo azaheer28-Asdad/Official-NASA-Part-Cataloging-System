@@ -19,6 +19,7 @@ except ImportError:
 # -------------------------------
 
 import os
+import configparser
 import sys
 import time
 import csv
@@ -56,7 +57,25 @@ from paddleocr import PaddleOCR
 
 # Configuration
 MOUSER_API_KEY = os.getenv("MOUSER_API_KEY")
-csv_file_name = "RENAME_Parts.csv"
+
+# --- INNO SETUP SAVE LOCATION LOGIC ---
+if getattr(sys, 'frozen', False):
+    exe_dir = os.path.dirname(sys.executable)
+else:
+    exe_dir = os.path.dirname(os.path.abspath(__file__))
+
+config_path = os.path.join(exe_dir, 'config.ini')
+config = configparser.ConfigParser()
+config.read(config_path)
+
+# Reads chosen folder from config.ini, defaults to exe folder if not found
+save_dir = config.get('Settings', 'SaveDirectory', fallback=exe_dir)
+os.makedirs(save_dir, exist_ok=True)
+
+# Full path where your CSV will live
+csv_file_name = os.path.join(save_dir, "RENAME_Parts.csv")
+# --------------------------------------
+
 
 # Initialize Pygame Mixer for Audio
 pygame.init()
