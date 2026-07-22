@@ -1,8 +1,19 @@
 # --- PADDLEX PYINSTALLER FIX ---
 try:
     import paddlex.utils.deps
-    # ONLY gag the pip checker. Let it load cv2 and everything else normally!
-    paddlex.utils.deps.require_extra = lambda *args, **kwargs: None
+
+
+    # Create a safe dummy decorator that lets the real code pass through untouched
+    def dummy_decorator(*args, **kwargs):
+        def decorator(func):
+            return func
+
+        return decorator
+
+
+    paddlex.utils.deps.require_extra = dummy_decorator
+    paddlex.utils.deps.require_deps = dummy_decorator
+    paddlex.utils.deps.require_packages = dummy_decorator
 except ImportError:
     pass
 # -------------------------------
