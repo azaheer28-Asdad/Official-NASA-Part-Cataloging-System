@@ -1,10 +1,8 @@
 # --- PADDLEX PYINSTALLER FIX ---
 try:
     import paddlex.utils.deps
-    # Gag ALL dependency checkers so they return silently inside the .exe
+    # ONLY gag the pip checker. Let it load cv2 and everything else normally!
     paddlex.utils.deps.require_extra = lambda *args, **kwargs: None
-    paddlex.utils.deps.require_deps = lambda *args, **kwargs: None
-    paddlex.utils.deps.require_packages = lambda *args, **kwargs: None
 except ImportError:
     pass
 # -------------------------------
