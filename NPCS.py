@@ -493,7 +493,14 @@ if __name__ == "__main__":
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 500)
 
     # Force use_angle_cls instead of textline orientation to bypass PP-LCNet
-    ocr = PaddleOCR(use_angle_cls=True, lang='en', device="cpu", enable_mkldnn=False)
+    ocr = PaddleOCR(
+        use_doc_orientation_classify=False,
+        use_angle_cls=False,
+        use_textline_orientation=False,
+        lang='en',
+        device="cpu",
+        enable_mkldnn=False
+    )
 
     while True:
         ret, frame = cap.read()
