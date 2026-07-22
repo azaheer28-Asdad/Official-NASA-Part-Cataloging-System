@@ -476,6 +476,13 @@ def buttons(possible_parts, title, button_thick, next_label_length, loc, auto_fi
 # --- Main Application Loop ---
 
 if __name__ == "__main__":
+
+
+
+    import multiprocessing
+    multiprocessing.freeze_support()
+
+
     cap = cv2.VideoCapture(0)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 500)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 500)
