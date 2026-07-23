@@ -19,6 +19,8 @@ except ImportError:
 # -------------------------------
 
 import os
+import ctypes
+import tempfile
 import configparser
 import sys
 import time
@@ -74,7 +76,8 @@ config = configparser.ConfigParser()
 config.read(config_path)
 
 # Reads chosen folder from config.ini, defaults to exe folder if not found
-save_dir = config.get('Settings', 'SaveDirectory', fallback=exe_dir)
+default_docs_dir = os.path.join(os.path.expanduser("~"), "Documents", "NPCS")
+save_dir = config.get('Settings', 'SaveDirectory', fallback=default_docs_dir)
 os.makedirs(save_dir, exist_ok=True)
 
 # Full path where your CSV will live
@@ -506,12 +509,12 @@ if __name__ == "__main__":
         cv2.imshow("frame", frame)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        key = cv2.waitKey(1)
+        key = cv2.waitKey(1) & 0xFF
 
         if cv2.getWindowProperty("frame", cv2.WND_PROP_VISIBLE) < 1:
             quit_it()
 
-        if key == ord(' '):
+        if key == 32 or key == ord(' '):
             root = tk.Tk()
             root.title('NPCS')
             root.geometry("800x600")
@@ -524,9 +527,10 @@ if __name__ == "__main__":
 
             entry = ["", "", "", "", "", "", "", ""]
             text_boxes = []
-            cv2.imwrite("label.jpg", frame)
 
-            result = ocr.predict("label.jpg")
+            temp_img_path = os.path.join(tempfile.gettempdir(), "npcs_label.jpg")
+            cv2.imwrite(temp_img_path, frame)
+            result = ocr.predict(temp_img_path)
             result = result[0]['rec_texts']
 
             print(result)
