@@ -495,7 +495,6 @@ if __name__ == "__main__":
     # Force use_angle_cls instead of textline orientation to bypass PP-LCNet
     ocr = PaddleOCR(
         use_doc_orientation_classify=False,
-        use_angle_cls=False,
         use_textline_orientation=False,
         lang='en',
         device="cpu",
