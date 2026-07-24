@@ -1,3 +1,18 @@
+# --- Put this at the very top of NPCS.py ---
+import sys
+
+class DummyStream:
+    def write(self, text):
+        pass
+    def flush(self):
+        pass
+
+if sys.stdout is None:
+    sys.stdout = DummyStream()
+if sys.stderr is None:
+    sys.stderr = DummyStream()
+
+
 # --- PADDLEX PYINSTALLER FIX ---
 try:
     import paddlex.utils.deps
@@ -22,7 +37,6 @@ import os
 import ctypes
 import tempfile
 import configparser
-import sys
 import time
 import csv
 import re
