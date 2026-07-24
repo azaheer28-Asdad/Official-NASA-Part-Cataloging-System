@@ -10,7 +10,7 @@ This is supposed to be a Windows only application, but if needed on Linux, you m
 **NO LIBRARIES NEED TO BE INSTALLED** -- Just use the windows .EXE file. Easy!
 * Get a free API key from Mouser Electronics. (Has a limit of 1000 free scans per day)
 * Save that key and title it exactly "MOUSER_API_KEY" (no quotes) as an env variable through the terminal
-* Download the NPCS_setup.exe file and procede with instalation, pleas ebe patient as things do load even without progress bars.
+* Download the NPCS_setup.exe file and procede with instalation, pleas be patient as things do load even without progress bars.
 * Application should launch on its own just be patient, it may take as long as a minute or two (with no loading screen). 
 
 ## How to Install, Specifics:
